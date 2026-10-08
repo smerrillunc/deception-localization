@@ -161,7 +161,6 @@ reasoning:N` instead releases at `</think>`, per sequence.
 | `lenient_action_reader.py` | rescores with a lenient but label-preserving action reader |
 | `judge_coherence.py` | LLM-as-judge coherence scoring of both arms |
 | `steering_support/bs_circuit.pt` | the 32-head circuit and its per-head directions |
-| `Notebooks/steering_results.ipynb` | every table and figure, from the aggregated results |
 
 ## Running it
 
@@ -178,13 +177,8 @@ python AnalysisScripts/Steering/prefix_steering.py \
   --dump-generations Results/Steering/runs/sw_car_sales_a10_L250.gen.jsonl
 ```
 
-The whole sweep, one worker per GPU:
-
-```bash
-GPUS="0 1 2 3" AnalysisScripts/Steering/shell_scripts/run_length_dose_sweep.sh
-```
-
-Then aggregate:
+The sweep is that command over the grid — five environments, three doses, five
+lengths — one worker per GPU. Then aggregate:
 
 ```bash
 python AnalysisScripts/Steering/collect_steering_results.py --runs Results/Steering/runs
@@ -205,10 +199,6 @@ Everything lands under `Results/`, which is not tracked.
     Results/Steering/sweep_results.json           collect_steering_results.py
     Results/Steering/lenient_results.json         lenient_action_reader.py
     Results/Steering/coherence_judge.json         judge_coherence.py
-    Results/Steering/figures/                     written by the notebook
-
-The notebook reads the four aggregates, so once the sweep has run it reproduces
-every table and figure without a GPU.
 
 ## Reading the numbers
 

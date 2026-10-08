@@ -20,11 +20,8 @@ scikit-learn
 xgboost
 openai   # AnalysisScripts/OODModeling/cot_monitor.py and AnalysisScripts/Steering/judge_coherence.py
 
-# Notebook / dashboard packages
+# Notebooks
 ipython
-ipywidgets
-nbformat
-streamlit
 
 # Mechanistic analysis
 # Required by AnalysisScripts/AttributionPatching/attribution_patching.py

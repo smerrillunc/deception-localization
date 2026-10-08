@@ -1,12 +1,9 @@
 # Deception Localization
 This repository contains a compact, self-contained version of the deception-localization pipeline used for environment-level deception mining, sentence-level dataset construction, localization, and downstream analysis.
 
-## DatasetAccess
-1.  Public Dataset: https://huggingface.co/datasets/anonymous-neurips-2026-ED/deception-localization
-2.  Quick Visualization Dashboard: https://deceptionlocalization-brzuiezqfmmwnevbm2nwuw.streamlit.app/
-- Alternatively you can run locally with 
-3. Schema described in DatasetAccess/README.md
-4. Example of data access in code: DatasetAccess/hf_dataset_access_and_browser.ipynb
+## Dataset
+
+https://huggingface.co/datasets/anonymous-neurips-2026-ED/deception-localization
 
 ## Installation
 
@@ -21,7 +18,6 @@ pip install -r requirements.txt
 - `Environments/`: task environments and prompt-demo notebooks.
 - `LocalizationScripts/`: the end-to-end localization data generation pipeline.
 - `AnalysisScripts/`: feature extraction, OOD modeling, and mechanistic analysis entrypoints.
-- `DatasetAccess/`: Hugging Face dataset access notebook, dashboard, and schema documentation.
 - `Core/`: shared helper modules vendored locally so this repo stands alone.
 
 ## Localization Workflow
@@ -68,12 +64,15 @@ discovers, both under `AnalysisScripts/`:
   to the four environments it was *not* found in, from post-commitment prefixes.
 
 ```bash
-GPUS="0 1 2 3" AnalysisScripts/Steering/shell_scripts/run_length_dose_sweep.sh
+python AnalysisScripts/Steering/prefix_steering.py --env car_sales \
+  --vector-path AnalysisScripts/Steering/steering_support/bs_circuit.pt \
+  --alpha 1.0 --window fixed:250 --delta-mode relative \
+  --out Results/Steering/runs/car_sales_a1.0_L250.jsonl
+
 python AnalysisScripts/Steering/collect_steering_results.py --runs Results/Steering/runs
 ```
 
-`AnalysisScripts/Steering/Notebooks/steering_results.ipynb` turns the aggregates into every
-table and figure. Scripts write under `Results/`, which is not tracked.
+Scripts write under `Results/`, which is not tracked.
 
 ## Environments
 
@@ -146,38 +145,6 @@ method behind each.
   circuit to the four environments it was *not* discovered in, from
   post-commitment prefixes, with the aggregation, lenient rescoring and
   coherence-judge passes alongside it.
-
-
-## Dataset Access
-
-- `DatasetAccess/hf_dataset_access_and_browser.ipynb`
-  Notebook for browsing and visualizing the Hugging Face localization dataset.
-
-- `DatasetAccess/app.py`
-  Streamlit dashboard for the same dataset, reading directly from Hugging Face.
-
-- `DatasetAccess/hf_dataset_browser_lib.py`
-  Shared helper library used by both the notebook and the Streamlit dashboard.
-
-- `DatasetAccess/build_hf_dataset_access_notebook.py`
-  Builder script for regenerating the notebook.
-
-- `DatasetAccess/LOCALIZATION_DATASET_SCHEMA.md`
-  Complete field-by-field schema documentation for one localization example file.
-
-Run the dashboard with:
-
-```bash
-streamlit run DatasetAccess/app.py
-```
-
-The dashboard and notebook both browse the Hugging Face dataset lazily:
-
-- they select `environment` first
-- then `model`
-- then scan only that `localization/` folder with a configurable cap
-
-This avoids listing all example files in the dataset up front.
 
 ## Quick Start
 

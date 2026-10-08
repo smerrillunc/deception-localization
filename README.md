@@ -22,7 +22,6 @@ pip install -r requirements.txt
 - `LocalizationScripts/`: the end-to-end localization data generation pipeline.
 - `AnalysisScripts/`: feature extraction, OOD modeling, and mechanistic analysis entrypoints.
 - `DatasetAccess/`: Hugging Face dataset access notebook, dashboard, and schema documentation.
-- `SteeringScripts/`: activation steering from a discovered circuit, and its evaluation.
 - `Core/`: shared helper modules vendored locally so this repo stands alone.
 
 ## Localization Workflow
@@ -60,27 +59,21 @@ For common runs, the repo also includes shell wrappers under `LocalizationScript
 
 ## Steering
 
-`SteeringScripts/` asks whether a circuit discovered in one environment can be
-steered to suppress deception in the others. The circuit shipped here is 32
-attention heads found by attribution patching on `bs`; it is applied unchanged
-to the other four, so `bs` is in-distribution and the rest are transfer.
+Two steering evaluations run off the circuit `AnalysisScripts/attribution_patching.py`
+discovers, both under `AnalysisScripts/`:
 
-For each (dose, steering length) cell the runner builds post-commitment prefixes
-by cutting deceptive rollouts before they state their decision, screens them, and
-then draws steered and unsteered continuations from each prefix under matched
-seeds. Both arms are labelled by the environment's own rule, so they differ only
-by the intervention.
+- **In distribution** — `attribution_patching.py steering` generates from held-out
+  prompts in the environment the circuit was found in.
+- **Across environments** — `prefix_steering.py` applies the same circuit, unchanged,
+  to the four environments it was *not* found in, from post-commitment prefixes.
 
 ```bash
-GPUS="0 1 2 3" SteeringScripts/shell_scripts/run_length_dose_sweep.sh
-python SteeringScripts/collect_results.py --runs Results/Steering/runs
+GPUS="0 1 2 3" AnalysisScripts/shell_scripts/run_length_dose_sweep.sh
+python AnalysisScripts/collect_steering_results.py --runs Results/Steering/runs
 ```
 
-`SteeringScripts/Notebooks/steering_results.ipynb` turns the aggregates into
-every table and figure. See `SteeringScripts/README.md` for the method and the
-steering rule.
-
-Scripts write under `Results/` by default; that directory is not tracked.
+`AnalysisScripts/Notebooks/steering_results.ipynb` turns the aggregates into every
+table and figure. Scripts write under `Results/`, which is not tracked.
 
 ## Environments
 
@@ -147,11 +140,11 @@ Convenience launchers:
 - `AnalysisScripts/cot_monitor.py`
   Zero-shot LLM chain-of-thought monitor baselines (`run` queries an OpenAI-compatible API with `OPENAI_API_KEY`, `score` evaluates them). Two prompts (`action`: which action will the agent take; `committed`: has the agent committed), each read from token log-probabilities or from the generated answer alone.
 
-- `AnalysisScripts/mechanistic_interpretability.py`
+- `AnalysisScripts/attribution_patching.py`
   The mechanistic experiment: head-level attribution patching, circuit selection,
   and in-distribution steering, over three patch scopes. See
   `AnalysisScripts/README.md` for the subcommands and what each produces. The
-  circuit it discovers is what `SteeringScripts/` carries to other environments.
+  circuit it discovers is what `prefix_steering.py` carries to other environments.
 
 Internal analysis support is grouped to reduce clutter:
 

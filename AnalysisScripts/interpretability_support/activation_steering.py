@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """Counterfactual steering generations from a discovered circuit.
 
-Support module for `mechanistic_interpretability.py`. Takes a saved steering
+Support module for `attribution_patching.py`. Takes a saved steering
 vector bundle, applies it to the selected heads while generating from held-out
 prompts, and records the resulting actions so the steered and unsteered
 conditions can be compared under the environment's own deception labels.
 
-This is the in-distribution evaluation. `SteeringScripts/` runs the same circuit
+This is the in-distribution evaluation. `prefix_steering.py` runs the same circuit
 across environments it was not discovered in.
 """
 from __future__ import annotations

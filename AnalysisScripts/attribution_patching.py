@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Head-level attribution patching, circuit selection, and steering.
+"""Attribution patching: rank attention heads, select a circuit, steer with it.
 
 The main mechanistic experiment. Three subcommands, run in order:
 
@@ -18,9 +18,12 @@ The patch scope decides how much of the commitment sentence is patched --
 that matters only when the whole sentence is patched is making a different
 claim than one that matters at the first token.
 
-Head ranking and patching live in `interpretability_support/activation_patching.py`;
+Head ranking is the gradient-based approximation computed here; the causal
+check that swaps activations outright lives in
+`interpretability_support/activation_patching.py`, which also builds the
+matched pairs this consumes.
 the generation side lives in `interpretability_support/activation_steering.py`.
-The circuit this produces is what `SteeringScripts/` carries to the environments
+The circuit this produces is what `prefix_steering.py` carries to the environments
 it was not discovered in.
 """
 from __future__ import annotations

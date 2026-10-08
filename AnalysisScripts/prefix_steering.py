@@ -40,6 +40,7 @@ SRC_ROOT = Path(__file__).resolve().parent
 REPO_ROOT = SRC_ROOT.parent
 for path in (
     SRC_ROOT,
+    SRC_ROOT / "steering_support",
     REPO_ROOT / "Core",
     REPO_ROOT / "LocalizationScripts",
     REPO_ROOT / "Environments" / "AdvisorAudit" / "src",

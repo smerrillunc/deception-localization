@@ -8,14 +8,14 @@ set -euo pipefail
 
 PYTHON_BIN="${PYTHON_BIN:-python}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-STEERING_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-REPO_ROOT="$(cd "$STEERING_DIR/.." && pwd)"
+ANALYSIS_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+REPO_ROOT="$(cd "$ANALYSIS_DIR/.." && pwd)"
 RESULTS_ROOT="${RESULTS_ROOT:-$REPO_ROOT/Results}"
 
 OUT_DIR="${OUT_DIR:-$RESULTS_ROOT/Steering/runs}"
 LOG_DIR="${LOG_DIR:-$RESULTS_ROOT/Steering/logs}"
 LOCK_DIR="${LOCK_DIR:-$RESULTS_ROOT/Steering/locks}"
-VECTOR_PATH="${VECTOR_PATH:-$STEERING_DIR/Circuit/bs_circuit.pt}"
+VECTOR_PATH="${VECTOR_PATH:-$ANALYSIS_DIR/steering_support/bs_circuit.pt}"
 
 ENVS="${ENVS:-bs gridworld interview car_sales advisor_audit}"
 ALPHAS="${ALPHAS:-0.5 1.0 2.0}"
@@ -44,7 +44,7 @@ Options:
   --envs "LIST"        Environments to sweep.                Default: all five
   --alphas "LIST"      Steering doses.                       Default: 0.5 1.0 2.0
   --lengths "LIST"     Steered decode steps before release.  Default: 50 100 250 500 1000
-  --vector_path PATH   Circuit to steer with.                Default: Circuit/bs_circuit.pt
+  --vector_path PATH   Circuit to steer with.                Default: steering_support/bs_circuit.pt
   --out_dir DIR        Where run JSONL is written.           Default: Results/Steering/runs
   --no_generations     Skip the raw-completion dumps (much smaller output).
 
@@ -97,7 +97,7 @@ worker() {
     local dump=()
     [[ "$DUMP_GENERATIONS" == "1" ]] && dump=(--dump-generations "$OUT_DIR/$tag.gen.jsonl")
     CUDA_VISIBLE_DEVICES="$gpu" PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True \
-      "$PYTHON_BIN" "$STEERING_DIR/prefix_steering.py" \
+      "$PYTHON_BIN" "$ANALYSIS_DIR/prefix_steering.py" \
         --env "$env" --vector-path "$VECTOR_PATH" \
         --alpha "$a" --window "fixed:${len}" --delta-mode "$DELTA_MODE" \
         --max-new "$MAX_NEW" --target-prefixes "$TARGET_PREFIXES" \
@@ -114,4 +114,4 @@ worker() {
 for gpu in $GPUS; do worker "$gpu" & sleep 2; done
 wait
 echo "sweep complete; aggregate with:"
-echo "  $PYTHON_BIN $STEERING_DIR/collect_results.py --runs $OUT_DIR"
+echo "  $PYTHON_BIN $ANALYSIS_DIR/collect_steering_results.py --runs $OUT_DIR"

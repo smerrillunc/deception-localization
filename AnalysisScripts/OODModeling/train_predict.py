@@ -18,7 +18,7 @@ from pathlib import Path
 
 
 THIS_FILE = Path(__file__).resolve()
-REPO_ROOT = THIS_FILE.parents[1]
+REPO_ROOT = THIS_FILE.parents[2]
 OOD_SUPPORT_DIR = THIS_FILE.with_name("ood_support")
 OOD_MODELING_LIB_PATH = OOD_SUPPORT_DIR / "ood_modeling_lib.py"
 
@@ -285,9 +285,8 @@ def resolve_output_root(
         return Path(explicit_output_root)
     scenario_slug = "__".join(slugify(scenario_name) for scenario_name in scenarios)
     suffix = "__only_tfidf" if only_tfidf else ""
-    return THIS_FILE.parent / (
-        f"ood_modeling_outputs__{slugify(model_dirname)}__{slugify(model_family)}__{scenario_slug}"
-        f"{suffix}"
+    return REPO_ROOT / "Results" / "OODModeling" / (
+        f"{slugify(model_dirname)}__{slugify(model_family)}__{scenario_slug}{suffix}"
     )
 
 

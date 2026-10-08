@@ -13,8 +13,8 @@ two ways:
     logits          probability of the answer from the first-token log-probabilities (continuous score)
     hard decision   the answer the model generated, as 0/1 (no probabilities)
 
-    python AnalysisScripts/cot_monitor.py run   --dataset-root DATA --out DIR --prompt committed --max-cost 5
-    python AnalysisScripts/cot_monitor.py score --dataset-root DATA --out DIR --prompt committed
+    python AnalysisScripts/OODModeling/cot_monitor.py run   --dataset-root DATA --out DIR --prompt committed --max-cost 5
+    python AnalysisScripts/OODModeling/cot_monitor.py score --dataset-root DATA --out DIR --prompt committed
 
 `run` needs the `openai` package and the OPENAI_API_KEY environment variable; it stops once --max-cost is reached.
 Data layout: <dataset-root>/<environment>/<model>/localization/*.json[.gz] (the released localization files).

@@ -59,7 +59,7 @@ For common runs, the repo also includes shell wrappers under `LocalizationScript
 
 ## Steering
 
-Two steering evaluations run off the circuit `AnalysisScripts/attribution_patching.py`
+Two steering evaluations run off the circuit `AnalysisScripts/AttributionPatching/attribution_patching.py`
 discovers, both under `AnalysisScripts/`:
 
 - **In distribution** — `attribution_patching.py steering` generates from held-out
@@ -68,11 +68,11 @@ discovers, both under `AnalysisScripts/`:
   to the four environments it was *not* found in, from post-commitment prefixes.
 
 ```bash
-GPUS="0 1 2 3" AnalysisScripts/shell_scripts/run_length_dose_sweep.sh
-python AnalysisScripts/collect_steering_results.py --runs Results/Steering/runs
+GPUS="0 1 2 3" AnalysisScripts/Steering/shell_scripts/run_length_dose_sweep.sh
+python AnalysisScripts/Steering/collect_steering_results.py --runs Results/Steering/runs
 ```
 
-`AnalysisScripts/Notebooks/steering_results.ipynb` turns the aggregates into every
+`AnalysisScripts/Steering/Notebooks/steering_results.ipynb` turns the aggregates into every
 table and figure. Scripts write under `Results/`, which is not tracked.
 
 ## Environments
@@ -125,34 +125,28 @@ Convenience launchers:
 
 ## Analysis Scripts
 
-- `AnalysisScripts/text_structural_feature_extractor.py`
-  Builds text-only and structural sentence-level baseline features from localization outputs.
+Three experiments, one folder each. See `AnalysisScripts/README.md` for the
+method behind each.
 
-- `AnalysisScripts/attention_activation_feature_extractor.py`
-  Extracts sentence-level attention features plus activation summaries / activation tensors from localization outputs.
+- `AnalysisScripts/OODModeling/`
+  Can a commitment juncture be predicted, and does the predictor transfer to an
+  environment it never saw? Feature extraction (`text_structural_feature_extractor.py`,
+  `attention_activation_feature_extractor.py`), leave-one-environment-out modeling
+  (`train_predict.py`), and the cheap baselines it has to beat
+  (`position_text_baselines.py`, `cot_monitor.py`).
 
-- `AnalysisScripts/train_predict.py`
-  The single public OOD modeling entrypoint. It owns the CLI and runs the internal OOD modeling library from `AnalysisScripts/ood_support/`.
+- `AnalysisScripts/AttributionPatching/`
+  Which attention heads carry the commitment? `attribution_patching.py` ranks heads
+  by `target_grad * (source - target)` over the commitment sentence, selects a
+  circuit, and saves its steering vectors. `interpretability_support/activation_patching.py`
+  is the causal counterpart that swaps activations outright instead of approximating.
 
-- `AnalysisScripts/position_text_baselines.py`
-  Cheap non-mechanistic baselines for commitment-juncture prediction (normalized position, prefix / reasoning word count, MiniLM sentence embedding), trained with XGBoost under leave-one-environment-out or single-source transfer for deceptive and honest commitments. Reads the output of `text_structural_feature_extractor.py`.
+- `AnalysisScripts/Steering/`
+  Does editing those heads suppress deception? `prefix_steering.py` applies the
+  circuit to the four environments it was *not* discovered in, from
+  post-commitment prefixes, with the aggregation, lenient rescoring and
+  coherence-judge passes alongside it.
 
-- `AnalysisScripts/cot_monitor.py`
-  Zero-shot LLM chain-of-thought monitor baselines (`run` queries an OpenAI-compatible API with `OPENAI_API_KEY`, `score` evaluates them). Two prompts (`action`: which action will the agent take; `committed`: has the agent committed), each read from token log-probabilities or from the generated answer alone.
-
-- `AnalysisScripts/attribution_patching.py`
-  The mechanistic experiment: head-level attribution patching, circuit selection,
-  and in-distribution steering, over three patch scopes. See
-  `AnalysisScripts/README.md` for the subcommands and what each produces. The
-  circuit it discovers is what `prefix_steering.py` carries to other environments.
-
-Internal analysis support is grouped to reduce clutter:
-
-- `AnalysisScripts/ood_support/`
-  Internal support modules used by the OOD modeling pipeline, including the companion workflow sourced by `train_predict.py`.
-
-- `AnalysisScripts/interpretability_support/`
-  Internal support modules used by the mechanistic / activation-patching pipeline.
 
 ## Dataset Access
 

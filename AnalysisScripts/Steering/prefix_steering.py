@@ -37,7 +37,7 @@ from pathlib import Path
 import torch
 
 SRC_ROOT = Path(__file__).resolve().parent
-REPO_ROOT = SRC_ROOT.parent
+REPO_ROOT = SRC_ROOT.parents[1]
 for path in (
     SRC_ROOT,
     SRC_ROOT / "steering_support",

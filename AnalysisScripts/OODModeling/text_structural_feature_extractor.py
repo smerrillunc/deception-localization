@@ -27,7 +27,7 @@ except Exception:  # noqa: BLE001
     _tqdm = None
 
 THIS_FILE = Path(__file__).resolve()
-REPO_ROOT = THIS_FILE.parents[1]
+REPO_ROOT = THIS_FILE.parents[2]
 CORE_DIR = REPO_ROOT / "Core"
 if str(CORE_DIR) not in sys.path:
     sys.path.insert(0, str(CORE_DIR))

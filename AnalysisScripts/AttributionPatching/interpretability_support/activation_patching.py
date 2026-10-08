@@ -43,7 +43,7 @@ except Exception:  # pragma: no cover - tqdm is optional at import time
 
 
 SCRIPT_DIR = Path(__file__).resolve().parent
-REPO_ROOT = SCRIPT_DIR.parents[1]
+REPO_ROOT = SCRIPT_DIR.parents[2]
 CORE_DIR = REPO_ROOT / "Core"
 ROOT_DIR = REPO_ROOT
 DEFAULT_MODEL_NAME = "deepseek-ai/DeepSeek-R1-Distill-Qwen-7B"

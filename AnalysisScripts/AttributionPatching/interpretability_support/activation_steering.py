@@ -37,7 +37,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 from transformers.cache_utils import DynamicCache
 
 SCRIPT_DIR = Path(__file__).resolve().parent
-REPO_ROOT = SCRIPT_DIR.parents[1]
+REPO_ROOT = SCRIPT_DIR.parents[2]
 CORE_DIR = REPO_ROOT / "Core"
 ROOT_DIR = REPO_ROOT
 for search_root in (SCRIPT_DIR, CORE_DIR):

@@ -52,7 +52,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 THIS_FILE = Path(__file__).resolve()
 ANALYSIS_ROOT = THIS_FILE.parent
-REPO_ROOT = THIS_FILE.parents[1]
+REPO_ROOT = THIS_FILE.parents[2]
 CORE_DIR = REPO_ROOT / "Core"
 INTERPRETABILITY_SUPPORT_DIR = ANALYSIS_ROOT / "interpretability_support"
 DEFAULT_OUTPUT_BASE = REPO_ROOT / "Results" / "activation_patchingHeadonly"

@@ -19,7 +19,7 @@ Protocols (train on training traces, evaluate on the held-out 20% validation tra
     single_source       train on one environment, test on each of the other four
 
 Example:
-    python AnalysisScripts/position_text_baselines.py --dataset-root DatasetMain \
+    python AnalysisScripts/OODModeling/position_text_baselines.py --dataset-root DatasetMain \
         --models DeepSeek-R1-Distill-Qwen-7B --protocol single_source --output baselines.csv
 """
 from __future__ import annotations

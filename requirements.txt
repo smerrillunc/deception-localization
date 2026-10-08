@@ -18,7 +18,7 @@ einops
 # Analysis packages
 scikit-learn
 xgboost
-openai   # AnalysisScripts/cot_monitor.py and AnalysisScripts/judge_coherence.py
+openai   # AnalysisScripts/OODModeling/cot_monitor.py and AnalysisScripts/Steering/judge_coherence.py
 
 # Notebook / dashboard packages
 ipython
@@ -27,7 +27,7 @@ nbformat
 streamlit
 
 # Mechanistic analysis
-# Required by AnalysisScripts/attribution_patching.py
+# Required by AnalysisScripts/AttributionPatching/attribution_patching.py
 nnsight
 
 # Optional extras you may also want depending on your workflow:

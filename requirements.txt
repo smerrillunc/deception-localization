@@ -18,7 +18,7 @@ einops
 # Analysis packages
 scikit-learn
 xgboost
-openai   # only for AnalysisScripts/cot_monitor.py run
+openai   # AnalysisScripts/cot_monitor.py and SteeringScripts/judge_coherence.py
 
 # Notebook / dashboard packages
 ipython

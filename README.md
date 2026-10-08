@@ -22,7 +22,9 @@ pip install -r requirements.txt
 - `LocalizationScripts/`: the end-to-end localization data generation pipeline.
 - `AnalysisScripts/`: feature extraction, OOD modeling, and mechanistic analysis entrypoints.
 - `DatasetAccess/`: Hugging Face dataset access notebook, dashboard, and schema documentation.
-- `Core/`: shared helper modules vendored locally so this repo does not depend on `deception2`.
+- `SteeringScripts/`: activation steering from a discovered circuit, and its evaluation.
+- `Results/`: aggregated outputs small enough to ship, so the analysis notebooks run without a GPU.
+- `Core/`: shared helper modules vendored locally so this repo stands alone.
 
 ## Localization Workflow
 
@@ -56,6 +58,29 @@ For common runs, the repo also includes shell wrappers under `LocalizationScript
   Multi-GPU launcher for localization. If needed, it first builds `examples.jsonl` and `sentences.jsonl`, then localizes across shards. By default it writes to:
   - `Results/SentenceDatasets/<env>/<model>/<run_tag>`
   - `Results/Localization/<env>/<model>/<run_tag>`
+
+## Steering
+
+`SteeringScripts/` asks whether a circuit discovered in one environment can be
+steered to suppress deception in the others. The circuit shipped here is 32
+attention heads found by attribution patching on `bs`; it is applied unchanged
+to the other four, so `bs` is in-distribution and the rest are transfer.
+
+For each (dose, steering length) cell the runner builds post-commitment prefixes
+by cutting deceptive rollouts before they state their decision, screens them, and
+then draws steered and unsteered continuations from each prefix under matched
+seeds. Both arms are labelled by the environment's own rule, so they differ only
+by the intervention.
+
+```bash
+GPUS="0 1 2 3" SteeringScripts/shell_scripts/run_length_dose_sweep.sh
+python SteeringScripts/collect_results.py --runs Results/Steering/runs
+```
+
+Every table and figure is reproduced from the shipped aggregates by
+`SteeringScripts/Notebooks/steering_results.ipynb`, which needs no GPU. See
+`SteeringScripts/README.md` for the method, the steering rule, and what is and
+is not included in `Results/`.
 
 ## Environments
 

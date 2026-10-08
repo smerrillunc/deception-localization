@@ -1,0 +1,9 @@
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.DS_Store
+
+# Raw generations are several gigabytes; the aggregates under Results/ are what
+# the notebooks read.
+Results/**/*.gen.jsonl
+Results/**/*.prefixes.jsonl

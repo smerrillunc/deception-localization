@@ -1,0 +1,35 @@
+# Core numerical / data packages
+numpy
+pandas
+scipy
+matplotlib
+tqdm
+pyarrow
+h5py
+joblib
+
+# Model / inference packages
+torch
+transformers
+huggingface_hub
+vllm
+einops
+
+# Analysis packages
+scikit-learn
+xgboost
+openai   # only for AnalysisScripts/cot_monitor.py run
+
+# Notebook / dashboard packages
+ipython
+ipywidgets
+nbformat
+streamlit
+
+# Mechanistic analysis
+# Required by AnalysisScripts/mechanistic_interpretibility.py
+nnsight
+
+# Optional extras you may also want depending on your workflow:
+# bitsandbytes   # needed only for 8-bit loading in attention_activation_feature_extractor.py
+# sentencepiece  # needed by some Hugging Face tokenizers / models

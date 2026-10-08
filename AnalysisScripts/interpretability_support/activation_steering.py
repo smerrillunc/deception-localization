@@ -1,4 +1,14 @@
 #!/usr/bin/env python3
+"""Counterfactual steering generations from a discovered circuit.
+
+Support module for `mechanistic_interpretability.py`. Takes a saved steering
+vector bundle, applies it to the selected heads while generating from held-out
+prompts, and records the resulting actions so the steered and unsteered
+conditions can be compared under the environment's own deception labels.
+
+This is the in-distribution evaluation. `SteeringScripts/` runs the same circuit
+across environments it was not discovered in.
+"""
 from __future__ import annotations
 
 import argparse
@@ -4785,7 +4795,7 @@ def run_bidirectional_steering_experiment(
 
 
 def legacy_single_example_main(argv: list[str] | None = None) -> None:
-    parser = argparse.ArgumentParser(description="Activation patching sweep for BS localization examples.")
+    parser = argparse.ArgumentParser(description="Counterfactual steering generations from a discovered circuit.")
     parser.add_argument("--localization-path", type=str, default="")
     parser.add_argument(
         "--model-name-or-path",

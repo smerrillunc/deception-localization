@@ -1,4 +1,14 @@
 #!/usr/bin/env python3
+"""Sentence-level attention and activation features from localization runs.
+
+Reads the localization JSON produced by `LocalizationScripts/sentence_localization.py`
+and writes two artifacts per environment: a parquet table of handcrafted
+attention, transition and activation-summary features, and an HDF5 file of the
+raw final-layer activations those summaries are drawn from.
+
+Together with `text_structural_feature_extractor.py` these are the feature
+spaces `train_predict.py` compares when predicting commitment junctures.
+"""
 from __future__ import annotations
 
 import argparse

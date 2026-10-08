@@ -96,18 +96,20 @@ python SteeringScripts/judge_coherence.py --runs Results/Steering/runs   # needs
 `judge_coherence.py --dry-run` prints the exact prompt and a token estimate
 without calling the API.
 
-## What is in `Results/Steering`
+## What the run writes
 
-`runs/` holds one JSONL per cell, one line per prefix, with the
-deceptive/truthful/invalid counts of both arms — the primary results, small
-enough to ship. `sweep_results.json`, `lenient_results.json`,
-`coherence_judge.json` and `coherence_judge_validation.json` are the aggregates
-the notebook reads, so it runs without a GPU.
+Everything lands under `Results/`, which is not tracked.
 
-The raw generations (`*.gen.jsonl`) are several gigabytes and are not included.
-`lenient_action_reader.py` and `judge_coherence.py` both read them, so
-reproducing those two steps means re-running the sweep with
-`--dump-generations`.
+    Results/Steering/runs/<tag>.jsonl             one line per prefix, both arms' counts
+    Results/Steering/runs/<tag>.gen.jsonl         raw completions (large; needed by the
+                                                  lenient reader and the coherence judge)
+    Results/Steering/sweep_results.json           collect_results.py
+    Results/Steering/lenient_results.json         lenient_action_reader.py
+    Results/Steering/coherence_judge.json         judge_coherence.py
+    Results/Steering/figures/                     written by the notebook
+
+The notebook reads the four aggregates, so once the sweep has run it reproduces
+every table and figure without a GPU.
 
 ## Reading the numbers
 

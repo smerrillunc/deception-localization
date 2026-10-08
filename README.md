@@ -23,7 +23,6 @@ pip install -r requirements.txt
 - `AnalysisScripts/`: feature extraction, OOD modeling, and mechanistic analysis entrypoints.
 - `DatasetAccess/`: Hugging Face dataset access notebook, dashboard, and schema documentation.
 - `SteeringScripts/`: activation steering from a discovered circuit, and its evaluation.
-- `Results/`: aggregated outputs small enough to ship, so the analysis notebooks run without a GPU.
 - `Core/`: shared helper modules vendored locally so this repo stands alone.
 
 ## Localization Workflow
@@ -77,10 +76,11 @@ GPUS="0 1 2 3" SteeringScripts/shell_scripts/run_length_dose_sweep.sh
 python SteeringScripts/collect_results.py --runs Results/Steering/runs
 ```
 
-Every table and figure is reproduced from the shipped aggregates by
-`SteeringScripts/Notebooks/steering_results.ipynb`, which needs no GPU. See
-`SteeringScripts/README.md` for the method, the steering rule, and what is and
-is not included in `Results/`.
+`SteeringScripts/Notebooks/steering_results.ipynb` turns the aggregates into
+every table and figure. See `SteeringScripts/README.md` for the method and the
+steering rule.
+
+Scripts write under `Results/` by default; that directory is not tracked.
 
 ## Environments
 
@@ -147,8 +147,11 @@ Convenience launchers:
 - `AnalysisScripts/cot_monitor.py`
   Zero-shot LLM chain-of-thought monitor baselines (`run` queries an OpenAI-compatible API with `OPENAI_API_KEY`, `score` evaluates them). Two prompts (`action`: which action will the agent take; `committed`: has the agent committed), each read from token log-probabilities or from the generated answer alone.
 
-- `AnalysisScripts/mechanistic_interpretibility.py`
-  Mechanistic analysis / activation-patching entry script.
+- `AnalysisScripts/mechanistic_interpretability.py`
+  The mechanistic experiment: head-level attribution patching, circuit selection,
+  and in-distribution steering, over three patch scopes. See
+  `AnalysisScripts/README.md` for the subcommands and what each produces. The
+  circuit it discovers is what `SteeringScripts/` carries to other environments.
 
 Internal analysis support is grouped to reduce clutter:
 

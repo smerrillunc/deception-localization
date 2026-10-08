@@ -3,7 +3,5 @@ __pycache__/
 .ipynb_checkpoints/
 .DS_Store
 
-# Raw generations are several gigabytes; the aggregates under Results/ are what
-# the notebooks read.
-Results/**/*.gen.jsonl
-Results/**/*.prefixes.jsonl
+# Run outputs. Scripts default to writing here; nothing under it is committed.
+Results/

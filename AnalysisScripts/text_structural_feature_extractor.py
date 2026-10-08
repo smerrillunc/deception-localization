@@ -1,4 +1,11 @@
 #!/usr/bin/env python3
+"""Sentence-level text and structural baseline features.
+
+The counterpart to `attention_activation_feature_extractor.py`: features that
+need no model internals -- the sentence itself, the reasoning prefix up to it,
+the rendered prompt context, and structural descriptors such as position and
+length. These are the baselines a representation-based predictor has to beat.
+"""
 from __future__ import annotations
 
 import argparse

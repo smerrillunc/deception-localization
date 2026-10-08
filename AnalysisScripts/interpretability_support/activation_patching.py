@@ -1,4 +1,14 @@
 #!/usr/bin/env python3
+"""Attribution patching over attention heads at the commitment sentence.
+
+Support module for `mechanistic_interpretability.py`. Builds matched
+deceptive/truthful pairs from localization examples, patches head outputs from
+one into the other across the commitment sentence, and scores each head by how
+much that patch moves the deception label.
+
+Ranking these scores is what produces the circuit; the patch scope (first token,
+first half sentence, or the full sentence) is chosen by the caller.
+"""
 from __future__ import annotations
 
 import argparse

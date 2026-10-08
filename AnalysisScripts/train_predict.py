@@ -1,4 +1,13 @@
 #!/usr/bin/env python3
+"""Train and evaluate commitment-juncture predictors across environments.
+
+Runs the out-of-distribution modeling pipeline over the extracted feature
+spaces: fits on some environments, tests on the held-out ones, and writes the
+transfer AUROC tables, confusion summaries and top-feature reports.
+
+The pipeline itself lives in `ood_support/`; this script is the entrypoint that
+configures and launches it.
+"""
 from __future__ import annotations
 
 import argparse

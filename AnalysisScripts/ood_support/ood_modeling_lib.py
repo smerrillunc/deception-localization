@@ -1,3 +1,12 @@
+"""The out-of-distribution modeling pipeline.
+
+Assembles feature frames per environment, splits by example so no reasoning
+trace spans train and test, fits the candidate models, and reports transfer
+performance when an environment is held out entirely.
+
+Driven by `train_predict.py`, which loads this module by path and hands it a
+runtime configuration.
+"""
 from __future__ import annotations
 
 import gc
@@ -79,14 +88,6 @@ def config_bool(name: str, default: bool = False) -> bool:
         if normalized in {"0", "false", "no", "n", "off"}:
             return False
     return bool(raw)
-
-
-def config_float_tuple(name: str, default: tuple[float, ...]) -> tuple[float, ...]:
-    raw = config_value(name, default)
-    if isinstance(raw, (list, tuple)):
-        return tuple(float(value) for value in raw)
-    parts = [part.strip() for part in str(raw).split(",") if part.strip()]
-    return tuple(float(part) for part in parts)
 
 
 def config_int_tuple(name: str, default: tuple[int, ...]) -> tuple[int, ...]:
@@ -2118,10 +2119,6 @@ def build_attention_matrix_cache(selected_features: list[str]) -> dict[str, dict
     return env_cache
 
 
-def structural_feature_family(feature_name: str) -> str:
-    return str(classify_feature_family(str(feature_name)))
-
-
 def tfidf_feature_family(_feature_name: str) -> str:
     return "tfidf"
 
@@ -2160,17 +2157,6 @@ def align_matrix_to_feature_order(
         shape=(matrix.shape[0], len(target_feature_names)),
         dtype=np.float32,
     )
-
-
-def gather_dense_rows_with_missing(matrix: np.ndarray, row_idx: np.ndarray) -> np.ndarray:
-    row_idx = np.asarray(row_idx, dtype=np.int64)
-    if row_idx.size == 0:
-        return np.zeros((0, int(matrix.shape[1])), dtype=np.float32)
-    out = np.zeros((row_idx.shape[0], int(matrix.shape[1])), dtype=np.float32)
-    valid_mask = row_idx >= 0
-    if valid_mask.any():
-        out[valid_mask] = np.asarray(matrix[row_idx[valid_mask]], dtype=np.float32)
-    return out
 
 
 def gather_sparse_rows_with_missing(matrix: sp.spmatrix, row_idx: np.ndarray) -> sp.csr_matrix:
@@ -2222,37 +2208,6 @@ def choose_cross_env_tfidf_feature_names(feature_names_by_env: OrderedDict[str, 
             seen.add(feature_name)
             ordered_union.append(feature_name)
     return ordered_union, "union_fallback"
-
-
-def build_structural_matrix_bundle() -> BaselineMatrixBundle:
-    matrices_by_env: dict[str, dict[str, np.ndarray]] = {}
-    feature_lookup_df = make_generic_feature_lookup(
-        space_name="baseline_structural",
-        feature_names=list(STRUCTURAL_BASELINE_FEATURE_COLUMNS),
-        feature_root="baseline_structural",
-        metric_name="sentence_structure",
-        family_resolver=structural_feature_family,
-    )
-
-    for env_name in ENV_ORDER:
-        env_paths = DATASET_FILE_MAP[env_name]
-        split_bundle = split_cache_by_env[env_name]
-        raw_df = pd.read_parquet(
-            env_paths["structural_baseline_path"],
-            columns=list(STRUCTURAL_BASELINE_FEATURE_COLUMNS),
-        ).copy()
-        raw_df = raw_df.apply(pd.to_numeric, errors="coerce").replace([np.inf, -np.inf], np.nan)
-        raw_matrix = raw_df.to_numpy(dtype=np.float32, copy=False)
-        matrices_by_env[env_name] = {
-            "train": gather_dense_rows_with_missing(raw_matrix, split_bundle["train_structural_row_idx"]),
-            "val": gather_dense_rows_with_missing(raw_matrix, split_bundle["val_structural_row_idx"]),
-        }
-
-    return BaselineMatrixBundle(
-        matrices_by_env=matrices_by_env,
-        feature_names=list(STRUCTURAL_BASELINE_FEATURE_COLUMNS),
-        feature_lookup_df=feature_lookup_df,
-    )
 
 
 def build_tfidf_matrix_bundle(*, text_field: str, space_name: str) -> BaselineMatrixBundle:

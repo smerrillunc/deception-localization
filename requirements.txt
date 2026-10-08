@@ -27,7 +27,7 @@ nbformat
 streamlit
 
 # Mechanistic analysis
-# Required by AnalysisScripts/mechanistic_interpretibility.py
+# Required by AnalysisScripts/mechanistic_interpretability.py
 nnsight
 
 # Optional extras you may also want depending on your workflow:

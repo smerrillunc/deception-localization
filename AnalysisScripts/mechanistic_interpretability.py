@@ -1,4 +1,28 @@
 #!/usr/bin/env python3
+"""Head-level attribution patching, circuit selection, and steering.
+
+The main mechanistic experiment. Three subcommands, run in order:
+
+    analyze    Rank attention heads by attribution patching on the training
+               split, choose the circuit size on validation, report final
+               numbers on test and OOD, and save a steering vector bundle.
+    vectors    Re-export a vector bundle from a saved analysis run for a
+               different split, without repeating the ranking.
+    steering   Generate from held-out prompts with the saved vectors applied,
+               so the steered and unsteered conditions can be compared under
+               the environment's own deception labels.
+
+The patch scope decides how much of the commitment sentence is patched --
+`patch_first_1_token`, `patch_first_half_sentence`, or `patch_full_sentence`
+(see SCOPE_RUN_LIBRARY). Scope is a first-class axis of the experiment: a head
+that matters only when the whole sentence is patched is making a different
+claim than one that matters at the first token.
+
+Head ranking and patching live in `interpretability_support/activation_patching.py`;
+the generation side lives in `interpretability_support/activation_steering.py`.
+The circuit this produces is what `SteeringScripts/` carries to the environments
+it was not discovered in.
+"""
 from __future__ import annotations
 
 import argparse
@@ -186,12 +210,6 @@ def parse_int_list(text: str | None) -> list[int]:
     if text is None:
         return []
     return [int(part.strip()) for part in str(text).split(",") if part.strip()]
-
-
-def parse_float_list(text: str | None) -> list[float]:
-    if text is None:
-        return []
-    return [float(part.strip()) for part in str(text).split(",") if part.strip()]
 
 
 def parse_string_list(text: str | None) -> list[str]:
@@ -1704,16 +1722,6 @@ def score_unpatched_chunks(
     return scores
 
 
-def weighted_average_chunk_scores(chunks: list[list[dict[str, Any]]], scores: list[float]) -> float:
-    weighted_total = 0.0
-    weight_total = 0
-    for chunk_pairs, score in zip(chunks, scores):
-        weight = len(chunk_pairs)
-        weighted_total += float(score) * weight
-        weight_total += weight
-    return weighted_total / float(weight_total)
-
-
 def score_source_target_baselines(
     runtime: HeadModelRuntime,
     chunks: list[list[dict[str, Any]]],
@@ -3096,16 +3104,6 @@ def build_steering_output_dir(
         out_dir = base_out_dir
     out_dir.mkdir(parents=True, exist_ok=True)
     return out_dir
-
-
-def build_generation_output_dir(vector_path: Path, output_dir: str, tag: str) -> Path:
-    return build_steering_output_dir(
-        vector_path,
-        output_dir,
-        tag,
-        num_shards=1,
-        shard_index=0,
-    )
 
 
 def load_vector_bundle(path: Path) -> tuple[dict[tuple[int, int], torch.Tensor], dict[str, Any]]:

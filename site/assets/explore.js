@@ -11,8 +11,8 @@ const CSS = (n) => getComputedStyle(document.documentElement).getPropertyValue(n
 const PAGE = 60;                       // rows rendered per "show more" step
 const state = {
   meta: null, rows: [], filtered: [],
-  env: new Set(), model: new Set(), junc: new Set(), out: new Set(),
-  jpLo: 0, jpHi: 1, frLo: 0, frHi: 1, jmLo: 0, npLo: 0, gpLo: 10,
+  env: new Set(), model: new Set(), out: new Set(),
+  frLo: 0, frHi: 1, jmLo: 0, npLo: 0,
   q: '', sort: 'final', shown: PAGE, sel: null,
 };
 const curveCache = new Map();          // "env__model" -> [{path, pts}]
@@ -74,19 +74,6 @@ function buildFilters() {
     toggle: (on) => { on ? state.model.add(m.id) : state.model.delete(m.id); },
   })));
 
-  const nHas = state.rows.filter(r => r.j != null).length;
-  $('f-junc').append(
-    optRow({
-      label: 'Reaches a juncture', count: nHas,
-      checked: () => state.junc.has('yes'),
-      toggle: (on) => { on ? state.junc.add('yes') : state.junc.delete('yes'); },
-    }),
-    optRow({
-      label: 'Never commits', count: state.rows.length - nHas,
-      checked: () => state.junc.has('no'),
-      toggle: (on) => { on ? state.junc.add('no') : state.junc.delete('no'); },
-    }));
-
   const nDec = state.rows.filter(r => r.r1 >= 0.5).length;
   $('f-out').append(
     optRow({
@@ -126,11 +113,9 @@ function wire() {
       apply();
     });
   };
-  rng('jp-lo', 'jpLo'); rng('jp-hi', 'jpHi');
   rng('fr-lo', 'frLo'); rng('fr-hi', 'frHi');
   rng('jm-lo', 'jmLo');
   rng('np-lo', 'npLo', (v) => String(v), 1);
-  rng('gp-lo', 'gpLo', (v) => String(v), 1);
 
   let t;
   $('q').addEventListener('input', (e) => {
@@ -139,15 +124,13 @@ function wire() {
   });
   $('sort').addEventListener('change', (e) => { state.sort = e.target.value; apply(); });
   $('reset').addEventListener('click', () => {
-    state.env.clear(); state.model.clear(); state.junc.clear(); state.out.clear();
-    state.jpLo = 0; state.jpHi = 1; state.frLo = 0; state.frHi = 1; state.jmLo = 0;
+    state.env.clear(); state.model.clear(); state.out.clear();
+    state.frLo = 0; state.frHi = 1; state.jmLo = 0;
     state.npLo = 0; state.q = ''; state.shown = PAGE;
     $('q').value = '';
-    state.gpLo = 0;
-    for (const [id, v] of [['jp-lo', 0], ['jp-hi', 100], ['fr-lo', 0], ['fr-hi', 100],
-                           ['jm-lo', 0], ['np-lo', 0], ['gp-lo', 0]]) {
+    for (const [id, v] of [['fr-lo', 0], ['fr-hi', 100], ['jm-lo', 0], ['np-lo', 0]]) {
       $(id).value = v;
-      $(id + '-v').textContent = (id === 'np-lo' || id === 'gp-lo') ? '0' : (v / 100).toFixed(2);
+      $(id + '-v').textContent = id === 'np-lo' ? '0' : (v / 100).toFixed(2);
     }
     document.querySelectorAll('.sidebar input[type=checkbox]').forEach(c => { c.checked = false; });
     apply();
@@ -187,21 +170,13 @@ function apply() {
   s.filtered = s.rows.filter(r => {
     if (s.env.size && !s.env.has(r.env)) return false;
     if (s.model.size && !s.model.has(r.model)) return false;
-    if (s.junc.size) {
-      const has = r.j != null;
-      if (!((has && s.junc.has('yes')) || (!has && s.junc.has('no')))) return false;
-    }
     if (s.out.size) {
       const dec = r.r1 >= 0.5;
       if (!((dec && s.out.has('dec')) || (!dec && s.out.has('hon')))) return false;
     }
-    // juncture-position window only constrains traces that have a juncture
-    if ((s.jpLo > 0 || s.jpHi < 1) && r.jpos != null &&
-        (r.jpos < s.jpLo || r.jpos > s.jpHi)) return false;
     if (r.r1 < s.frLo || r.r1 > s.frHi) return false;
     if (s.jmLo > 0 && !(r.jump >= s.jmLo)) return false;
     if (r.np < s.npLo) return false;
-    if (s.gpLo > 0 && gradedPerProbe(r) < s.gpLo) return false;
     if (s.q) {
       const hay = `${r.id} ${r.env} ${r.model} ${envLabel(r.env)} ${modelLabel(r.model)}`.toLowerCase();
       if (!hay.includes(s.q)) return false;
@@ -218,10 +193,6 @@ function apply() {
 
   $('n-shown').textContent = fmtNum(s.filtered.length);
   $('n-total').textContent = fmtNum(s.rows.length);
-  const held = s.gpLo > 0 ? s.rows.filter(r => gradedPerProbe(r) < s.gpLo).length : 0;
-  $('gp-excl').textContent = held
-    ? `Currently holding back ${fmtNum(held)} of ${fmtNum(s.rows.length)}.`
-    : 'Nothing held back.';
   drawList();
   writeUrl();
 }
@@ -1124,15 +1095,11 @@ function writeUrl() {
   const p = new URLSearchParams();
   if (state.env.size) p.set('env', [...state.env].join(','));
   if (state.model.size) p.set('model', [...state.model].join(','));
-  if (state.junc.size) p.set('junc', [...state.junc].join(','));
   if (state.out.size) p.set('out', [...state.out].join(','));
-  if (state.jpLo > 0) p.set('jplo', state.jpLo.toFixed(2));
-  if (state.jpHi < 1) p.set('jphi', state.jpHi.toFixed(2));
   if (state.frLo > 0) p.set('frlo', state.frLo.toFixed(2));
   if (state.frHi < 1) p.set('frhi', state.frHi.toFixed(2));
   if (state.jmLo > 0) p.set('jmlo', state.jmLo.toFixed(2));
   if (state.npLo > 0) p.set('nplo', String(state.npLo));
-  if (state.gpLo !== 10) p.set('gplo', String(state.gpLo));
   if (state.q) p.set('q', state.q);
   if (state.sort !== 'final') p.set('sort', state.sort);
   if (state.sel) p.set('trace', state.sel.path);
@@ -1147,12 +1114,10 @@ function readUrl() {
     if (v) v.split(',').filter(Boolean).forEach(x => target.add(x));
   };
   setOf('env', state.env); setOf('model', state.model);
-  setOf('junc', state.junc); setOf('out', state.out);
+  setOf('out', state.out);
   const num = (k, d) => (p.has(k) ? +p.get(k) : d);
-  state.jpLo = num('jplo', 0); state.jpHi = num('jphi', 1);
   state.frLo = num('frlo', 0); state.frHi = num('frhi', 1);
   state.jmLo = num('jmlo', 0); state.npLo = num('nplo', 0);
-  state.gpLo = num('gplo', 10);
   state.q = p.get('q') || '';
   const SORTS = new Set(['final', 'finala', 'id']);
   const wanted = p.get('sort');

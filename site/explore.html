@@ -42,25 +42,6 @@
       <div id="f-model"></div>
     </div>
     <div class="side-group">
-      <h4>Commitment juncture</h4>
-      <div id="f-junc"></div>
-      <div style="margin-top:9px">
-        <div class="range-row" style="margin-bottom:3px">
-          <span style="min-width:30px">from</span>
-          <input type="range" id="jp-lo" min="0" max="100" value="0">
-          <span class="range-val" id="jp-lo-v">0.00</span>
-        </div>
-        <div class="range-row">
-          <span style="min-width:30px">to</span>
-          <input type="range" id="jp-hi" min="0" max="100" value="100">
-          <span class="range-val" id="jp-hi-v">1.00</span>
-        </div>
-        <div style="font-size:11px;color:var(--text-muted);margin-top:3px">
-          position through the trace (0 = first sentence)
-        </div>
-      </div>
-    </div>
-    <div class="side-group">
       <h4>Outcome</h4>
       <div id="f-out"></div>
     </div>
@@ -86,21 +67,6 @@
       </div>
       <div style="font-size:11px;color:var(--text-muted);margin-top:3px">
         largest shift between consecutive probed boundaries
-      </div>
-    </div>
-    <div class="side-group">
-      <h4>Sampling quality</h4>
-      <div class="range-row">
-        <span style="min-width:30px">&ge;</span>
-        <input type="range" id="gp-lo" min="0" max="50" value="10">
-        <span class="range-val" id="gp-lo-v">10</span>
-      </div>
-      <div style="font-size:11px;color:var(--text-muted);margin-top:3px">
-        This is a <em>minimum</em>, not a sample size. Around 50 continuations are
-        sampled at every boundary and a typical trace grades about 50 of them;
-        this slider only excludes the few traces where most continuations failed
-        to parse, because a rate from a handful of samples snaps to 0 or 1 and
-        fakes a shift that is not there. <span id="gp-excl"></span>
       </div>
     </div>
     <div class="side-group">

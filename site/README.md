@@ -26,7 +26,7 @@ if the paper's numbers change.
 - **Home** — what the dataset is, how each example is built, the headline
   findings, the five environments, three worked examples, and the schema.
 - **Explore** — filter a 5,000-trace stratified sample by environment, model,
-  commitment juncture, outcome, final rate, jump size and length; open any trace
+  outcome, final rate, jump size and length; open any trace
   to see its full reasoning tinted by deception rate, its per-boundary curve,
   and the sampled continuations around its juncture.
 
@@ -316,11 +316,9 @@ continuations**, matching the ~50 target, and 99.1% of sampled continuations are
 In the first release about 2.2% of the sample (112 of 5,000 traces) were outliers where
 most continuations failed to parse, and they were over-represented among the sharpest
 jumps (a rate estimated from ~5 samples lands on exactly 0 or 1 with ease). After cleaning,
-no trace in the sample falls below 10 graded continuations per boundary.
+no trace in the sample falls below 10 graded continuations per boundary, so Explore has no
+sampling-quality filter; each row still shows its graded-per-probe count.
 
-The *Sampling quality* filter is kept: it defaults to requiring 10 graded continuations
-per boundary on average, the sidebar states how many traces it holds back (currently
-none), and the slider goes to 0. It affects Explore only; the Home aggregates use all 5,000.
 
 **Sampling caveat.** Every figure on the site is an estimate from the 5,000-trace
 sample, not a measurement of the full 99,999.

@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Counterfactual Deception Localization</title>
+<meta name="description" content="Counterfactual localization of deceptive commitment in language-model reasoning. A dataset locating when a model becomes committed to deceiving, by resampling continuations from every sentence boundary.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;450;500;600&display=swap">
+<link rel="stylesheet" href="assets/style.css?v=30">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%23fafafa'/><rect x='4' y='12' width='8' height='8' fill='%233e6ecd'/><rect x='20' y='12' width='8' height='8' fill='%23cb4f4f'/></svg>">
+</head>
+<body>
+
+<header class="masthead">
+  <span class="brand">
+    <span class="mark"></span>
+    Deception Localization
+  </span>
+  <nav class="tabs">
+    <a href="index.html" aria-current="page">Home</a>
+    <a href="explore.html">Explore</a>
+  </nav>
+  <span class="mast-right">
+    <button class="ghost-btn" id="theme-btn" type="button">Dark</button>
+    <span class="ghost-btn is-disabled" aria-disabled="true">Paper: temporarily removed</span>
+    <a class="ghost-btn" href="https://huggingface.co/datasets/a91939448/deception-localization" target="_blank" rel="noopener">Hugging Face &#8599;</a>
+  </span>
+</header>
+
+<!-- ================================================================ HERO -->
+<div class="hero">
+  <div class="wrap">
+    <div class="eyebrow">Counterfactual localization &middot; 1.46M localized sentences</div>
+    <h1>When does a model become committed to deceiving?</h1>
+    <p class="lede">
+      A reasoning trace that ends in deception does not start that way. Somewhere
+      in the middle, the model stops being undecided. This dataset locates that
+      moment by <strong>resampling the future</strong>: at each sentence boundary the
+      prefix is frozen, the same model is asked to continue 50 times, and every
+      continuation is graded by the environment's own rules. What comes back is
+      a probability &mdash; given everything said so far, how likely is this trace
+      to end deceptively?
+    </p>
+    <div class="paper-card">
+      <span class="pc-main"><span class="pc-title">Paper: temporarily removed</span></span>
+    </div>
+
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="explore.html">Explore the data &rarr;</a>
+      <a class="btn btn-secondary" href="https://huggingface.co/datasets/a91939448/deception-localization" target="_blank" rel="noopener">Download on Hugging Face</a>
+    </div>
+    <div class="strip" role="img"
+         aria-label="A commitment profile: continuations stay honest, then flip to deceptive."></div>
+    <div class="strip-note"><span>sentence 1</span><span>the juncture</span><span>final</span></div>
+
+    <div class="stats" id="hero-stats"></div>
+    <p id="hero-scale-note" class="note note-under"></p>
+  </div>
+</div>
+
+<!-- ============================================================ PIPELINE -->
+<section>
+  <div class="wrap">
+    <div class="eyebrow">How each example is built</div>
+    <h2 style="font-size:31px;margin-bottom:14px">Freeze a prefix, resample the future, grade every branch</h2>
+    <p class="lede" style="margin-bottom:26px">
+      Deception here is not a human judgement call. Each environment is built so
+      that the ground truth is in the environment state, and a rule decides
+      whether a given continuation deceived.
+    </p>
+  </div>
+
+  <figure class="paper-fig">
+    <div id="fig1" class="fig1-wrap"></div>
+    <figcaption>
+      <b>Figure 1 from the paper.</b> Deception mining and counterfactual
+      localization. In <em>deception mining</em>, we repeatedly sample from the
+      same environment state and retain exactly one honest and one deceptive
+      trajectory from that state. Each <em>s<sub>i</sub></em> denotes a sentence
+      in the reasoning trace. In <em>counterfactual localization</em>, we fix a
+      sentence prefix and sample many counterfactual continuations from that
+      prefix to estimate the counterfactual deception rate
+      <em>p&#770;(k)</em>. Repeating this over sentence boundaries yields a
+      commitment profile that reveals where in the reasoning trace the decision
+      to deceive occurs.
+    </figcaption>
+  </figure>
+</section>
+
+<!-- ========================================================== ENVIRONMENTS -->
+<section>
+  <div class="wrap">
+    <div class="eyebrow">Five environments</div>
+    <h2 style="font-size:31px;margin-bottom:14px">Deception is labelled from the environment, not from a rater</h2>
+    <p class="lede" style="margin-bottom:26px">
+      Every environment hides something from one party and gives the other a
+      reason to misreport it. Because the hidden state is known to the
+      simulator, each sampled continuation can be graded automatically.
+    </p>
+    <div class="grid-env" id="env-cards"></div>
+
+  </div>
+</section>
+
+<!-- ============================================================== EXAMPLES -->
+<section style="background:var(--surface-2)">
+  <div class="wrap">
+    <div class="eyebrow">Worked examples</div>
+    <h2 style="font-size:31px;margin-bottom:14px">Three traces, sentence by sentence</h2>
+    <p class="lede" style="margin-bottom:26px">
+      Each sentence is tinted by the deception rate measured at the boundary that
+      ends it &mdash; blue where continuations stayed honest, red where they turned
+      deceptive. Hover any sentence for its rate, interval, and sample size.
+    </p>
+    <div id="examples"></div>
+    <p style="margin-top:16px;font-size:13.5px;color:var(--text-secondary)">
+      <a href="explore.html">Open the Explore tab</a> to filter all
+      5,000 sampled traces by environment, model, juncture
+      position, and outcome &mdash; and to read the sampled continuations at each
+      juncture.
+    </p>
+  </div>
+</section>
+
+<!-- ================================================================ SCHEMA -->
+<section id="schema">
+  <div class="wrap">
+    <div class="eyebrow">Schema</div>
+    <h2 style="font-size:31px;margin-bottom:14px">One gzipped JSON object per localized trace</h2>
+    <p class="lede" style="margin-bottom:22px">
+      Files are laid out as
+      <code>&lt;environment&gt;/&lt;model&gt;/localization/sentence_localization_&lt;example_id&gt;.json.gz</code>.
+    </p>
+
+    <div class="grid-2">
+      <div class="card">
+        <h3>Top level</h3>
+        <p class="cap" style="margin-bottom:10px">Fields on the trace object.</p>
+        <div class="table-wrap">
+          <table class="data">
+            <tbody>
+              <tr><td><code>example_id</code></td><td>Stable id for the original trace</td></tr>
+              <tr><td><code>game</code></td><td>Environment name</td></tr>
+              <tr><td><code>prompt</code></td><td>Prompt before any resampling</td></tr>
+              <tr><td><code>raw_text</code></td><td>The full original reasoning trace</td></tr>
+              <tr><td><code>eval_context</code></td><td>Environment state needed to grade a continuation</td></tr>
+              <tr><td><code>candidate_prefix_end_idxs</code></td><td>Sentence-end indices that were probed</td></tr>
+              <tr><td><code>left_sentence_end_idx</code><br><code>right_sentence_end_idx</code></td><td>Bracket from the adaptive coarse search (a search artefact, not the juncture)</td></tr>
+              <tr><td><code>full_score</code></td><td>Probe record for the whole trace</td></tr>
+              <tr><td><code>history</code></td><td>The per-boundary records &mdash; the main payload</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3><code>history[*]</code></h3>
+        <p class="cap" style="margin-bottom:10px">One record per probed sentence boundary.</p>
+        <div class="table-wrap">
+          <table class="data">
+            <tbody>
+              <tr><td><code>sentence_end_idx</code></td><td>1-indexed boundary used for the prefix</td></tr>
+              <tr><td><code>sentence_text</code></td><td>The sentence ending at that boundary</td></tr>
+              <tr><td><code>prefix_text</code></td><td>Assistant text held fixed before sampling</td></tr>
+              <tr><td><code>deception_rate</code></td><td>Share of graded continuations judged deceptive</td></tr>
+              <tr><td><code>num_valid</code> / <code>num_truthful</code></td><td>Continuations graded, and how many were honest</td></tr>
+              <tr><td><code>ci_low</code> / <code>ci_high</code></td><td>Wilson interval on the rate</td></tr>
+              <tr><td><code>generations</code></td><td>The sampled continuations themselves</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <h3 style="margin-top:18px"><code>generations[*]</code></h3>
+        <div class="table-wrap">
+          <table class="data">
+            <tbody>
+              <tr><td><code>gen_text</code></td><td>The continuation, excluding the prefix</td></tr>
+              <tr><td><code>is_truthful</code> / <code>deceptive</code></td><td>Label, or null when not gradeable</td></tr>
+              <tr><td><code>parse_error</code></td><td>Why grading failed, when it did</td></tr>
+              <tr><td><code>evaluation</code></td><td>Environment-specific reason for the label</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:18px">
+      <h3>Loading one file</h3>
+      <pre style="margin:10px 0 0;overflow-x:auto;font-family:var(--mono);font-size:12.5px;line-height:1.6;color:var(--text-secondary)">import gzip, json
+from huggingface_hub import hf_hub_download
+
+path = hf_hub_download(
+    repo_id="a91939448/deception-localization",
+    repo_type="dataset",
+    filename="car_sales/gpt-oss-20b/localization/sentence_localization_&lt;id&gt;.json.gz",
+)
+with gzip.open(path, "rt", encoding="utf-8") as f:
+    ex = json.load(f)
+
+for h in ex["history"]:
+    print(h["sentence_end_idx"], round(h["deception_rate"], 3),
+          h["num_valid"], h["sentence_text"][:90])</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================ ACCESS -->
+<section>
+  <div class="wrap narrow">
+    <div class="eyebrow">Access &amp; licence</div>
+    <h2 style="font-size:31px;margin-bottom:14px">Released under CC&nbsp;BY&nbsp;4.0</h2>
+    <p style="color:var(--text-secondary)">
+      The full corpus is 99,999 localized traces &mdash; 5,000 for each of the five
+      environments crossed with four reasoning models, about 105&nbsp;GB
+      compressed. This site is built on a stratified random sample of
+      5,000 traces (equal numbers per environment&times;model
+      cell) so that every chart here is balanced by construction; the figures are
+      estimates from that sample, not the full corpus.
+    </p>
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="https://huggingface.co/datasets/a91939448/deception-localization" target="_blank" rel="noopener">Dataset card</a>
+      <span class="btn btn-secondary is-disabled" aria-disabled="true">Paper: temporarily removed</span>
+      <a class="btn btn-secondary" href="explore.html">Explore</a>
+    </div>
+
+    <h3 style="font-size:15.5px;margin:34px 0 4px">Citation</h3>
+    <p style="margin:0 0 12px;font-size:13.5px;color:var(--text-secondary)">Temporarily removed.</p>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="wrap">
+    Counterfactual Deception Localization &middot; data CC&nbsp;BY&nbsp;4.0 &middot;
+    Paper: temporarily removed &middot;
+    <a href="https://huggingface.co/datasets/a91939448/deception-localization" target="_blank" rel="noopener">Hugging Face</a>
+  </div>
+</footer>
+
+<script type="module" src="assets/home.js?v=30"></script>
+</body>
+</html>

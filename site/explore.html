@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Explore &middot; Counterfactual Deception Localization</title>
+<meta name="description" content="Filter 5,000 localized reasoning traces by environment, model, commitment juncture and outcome, and read the resampled continuations behind every estimate.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;450;500;600&display=swap">
+<link rel="stylesheet" href="assets/style.css?v=30">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%23fafafa'/><rect x='4' y='12' width='8' height='8' fill='%233e6ecd'/><rect x='20' y='12' width='8' height='8' fill='%23cb4f4f'/></svg>">
+</head>
+<body>
+
+<header class="masthead">
+  <span class="brand">
+    <span class="mark"></span>
+    Deception Localization
+  </span>
+  <nav class="tabs">
+    <a href="index.html">Home</a>
+    <a href="explore.html" aria-current="page">Explore</a>
+  </nav>
+  <span class="mast-right">
+    <button class="ghost-btn" id="copy-link" type="button">Copy view link</button>
+    <button class="ghost-btn" id="theme-btn" type="button">Dark</button>
+    <span class="ghost-btn is-disabled" aria-disabled="true">Paper: temporarily removed</span>
+    <a class="ghost-btn" href="https://huggingface.co/datasets/a91939448/deception-localization" target="_blank" rel="noopener">Hugging Face &#8599;</a>
+  </span>
+</header>
+
+<div class="explore-shell">
+  <!-- ========================================================== SIDEBAR -->
+  <aside class="sidebar">
+    <div class="side-group">
+      <h4>Environment</h4>
+      <div id="f-env"></div>
+    </div>
+    <div class="side-group">
+      <h4>Model</h4>
+      <div id="f-model"></div>
+    </div>
+    <div class="side-group">
+      <h4>Commitment juncture</h4>
+      <div id="f-junc"></div>
+      <div style="margin-top:9px">
+        <div class="range-row" style="margin-bottom:3px">
+          <span style="min-width:30px">from</span>
+          <input type="range" id="jp-lo" min="0" max="100" value="0">
+          <span class="range-val" id="jp-lo-v">0.00</span>
+        </div>
+        <div class="range-row">
+          <span style="min-width:30px">to</span>
+          <input type="range" id="jp-hi" min="0" max="100" value="100">
+          <span class="range-val" id="jp-hi-v">1.00</span>
+        </div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:3px">
+          position through the trace (0 = first sentence)
+        </div>
+      </div>
+    </div>
+    <div class="side-group">
+      <h4>Outcome</h4>
+      <div id="f-out"></div>
+    </div>
+    <div class="side-group">
+      <h4>Final deception rate</h4>
+      <div class="range-row" style="margin-bottom:3px">
+        <span style="min-width:30px">from</span>
+        <input type="range" id="fr-lo" min="0" max="100" value="0">
+        <span class="range-val" id="fr-lo-v">0.00</span>
+      </div>
+      <div class="range-row">
+        <span style="min-width:30px">to</span>
+        <input type="range" id="fr-hi" min="0" max="100" value="100">
+        <span class="range-val" id="fr-hi-v">1.00</span>
+      </div>
+    </div>
+    <div class="side-group">
+      <h4>Sharpest single-sentence jump</h4>
+      <div class="range-row">
+        <span style="min-width:30px">&ge;</span>
+        <input type="range" id="jm-lo" min="0" max="100" value="0">
+        <span class="range-val" id="jm-lo-v">0.00</span>
+      </div>
+      <div style="font-size:11px;color:var(--text-muted);margin-top:3px">
+        largest shift between consecutive probed boundaries
+      </div>
+    </div>
+    <div class="side-group">
+      <h4>Sampling quality</h4>
+      <div class="range-row">
+        <span style="min-width:30px">&ge;</span>
+        <input type="range" id="gp-lo" min="0" max="50" value="10">
+        <span class="range-val" id="gp-lo-v">10</span>
+      </div>
+      <div style="font-size:11px;color:var(--text-muted);margin-top:3px">
+        This is a <em>minimum</em>, not a sample size. Around 50 continuations are
+        sampled at every boundary and a typical trace grades about 50 of them;
+        this slider only excludes the few traces where most continuations failed
+        to parse, because a rate from a handful of samples snaps to 0 or 1 and
+        fakes a shift that is not there. <span id="gp-excl"></span>
+      </div>
+    </div>
+    <div class="side-group">
+      <h4>Probed boundaries</h4>
+      <div class="range-row">
+        <span style="min-width:30px">&ge;</span>
+        <input type="range" id="np-lo" min="0" max="40" value="0">
+        <span class="range-val" id="np-lo-v">0</span>
+      </div>
+    </div>
+    <button class="ghost-btn" id="reset" type="button" style="width:100%;justify-content:center">Reset filters</button>
+  </aside>
+
+  <!-- ============================================================ MAIN -->
+  <div class="main-col">
+    <div class="toolbar">
+      <span class="count"><b id="n-shown">0</b> of <b id="n-total">0</b> traces</span>
+      <input class="search" id="q" type="search" placeholder="Search example id, environment, model&hellip;" autocomplete="off">
+      <select class="sortsel" id="sort">
+        <option value="final">Sort: highest final rate</option>
+        <option value="finala">Sort: lowest final rate</option>
+        <option value="id">Sort: example id</option>
+      </select>
+      <span class="count" id="sel-summary" style="margin-left:auto"></span>
+    </div>
+
+    <div class="tlist" id="tlist"></div>
+    <div id="more-wrap" style="padding:0 20px 40px"></div>
+  </div>
+</div>
+
+<!-- ========================================================== DETAIL -->
+<div class="detail-mask" id="mask"></div>
+<aside class="detail" id="detail" aria-hidden="true">
+  <div class="detail-head">
+    <div style="min-width:0">
+      <h2 id="d-title">&nbsp;</h2>
+      <div class="sub" id="d-id"></div>
+    </div>
+    <button class="x-btn" id="d-close" type="button" aria-label="Close">&times;</button>
+  </div>
+  <div class="detail-body" id="d-body"></div>
+</aside>
+
+<script type="module" src="assets/explore.js?v=29"></script>
+</body>
+</html>

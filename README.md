@@ -3,7 +3,7 @@ This repository contains a compact, self-contained version of the deception-loca
 
 ## Dataset
 
-https://huggingface.co/datasets/anonymous-neurips-2026-ED/deception-localization
+https://huggingface.co/datasets/a91939448/deception-localization
 
 ## Installation
 
